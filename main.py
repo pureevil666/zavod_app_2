@@ -16,7 +16,7 @@ Window.size = (400, 600)
 class MyApp(App):
     def build(self):
         layout = GridLayout(rows=2)
-        self.text_input = TextInput()
+        self.text_input = TextInput(background_color=[.17, .17, .17, 1], foreground_color=[.9, .9, .9, 1])
         layout.add_widget(self.text_input)
         layout.add_widget(Button(text='Посчитать', on_press=self.click_button, size_hint=[1, 0.12]))
         return layout
