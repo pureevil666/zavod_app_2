@@ -20,6 +20,7 @@ from kivy.storage.jsonstore import JsonStore
 
 
 autosave = True
+
 data = JsonStore('data_file.json')
 try:
     text = data.get('data')['text']
@@ -27,20 +28,24 @@ except KeyError:
     data.put('data')
     text = ''
 
+class Input(TextInput):
+    def __init__(self, **kwargs):
+        super(Input, self).__init__(**kwargs)
 
 class MyApp(App):
     def build(self):
 
-        layout = GridLayout(rows=2)
+        layout = GridLayout(rows=3, cols=1)
         self.text_input = TextInput(text=text, background_color=[.17, .17, .17, 1], foreground_color=[.9, .9, .9, 1],
                                     text_language='ru')
+
         layout.add_widget(self.text_input)
-        layout.add_widget(Button(text='Посчитать', on_press=self.click_button, size_hint=[1, 0.5]))
+        layout.add_widget(Button(text='Посчитать', on_press=self.click_button, size_hint=[1, 0.6]))
         return layout
 
     def click_button(self, instance):
         calculation.give_data(self.text_input._get_text())
-        content = GridLayout(cols=1, rows=2, padding=[10])
+        content = GridLayout(cols=1, rows=3, padding=[10])
         self.popup = Popup(size_hint=(.7, .6), title='Результат', title_align='center',
                            title_size=20, content=content)
         self.popup.open()
