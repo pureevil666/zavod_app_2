@@ -1,22 +1,36 @@
 from kivy.config import Config
 
-Config.set('graphics', 'resizable', 0)
+Config.set('kivy', 'keyboard_mode', 'system')
+Config.set('graphics', 'position', 'custom')
+Config.set('graphics', 'left', 0)
+Config.set('graphics', 'top', 0)
+
 import calculation
+import json
+import threading
+import time
+import sys
 from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
-from kivy.core.window import Window
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.storage.jsonstore import JsonStore
 
-Window.size = (400, 600)
+autosave = True
+data = JsonStore('data_file.json')
+try:
+    text = data.get('data')['text']
+except KeyError:
+    data.put('data')
+    text = ''
 
 
 class MyApp(App):
     def build(self):
         layout = GridLayout(rows=2)
-        self.text_input = TextInput(background_color=[.17, .17, .17, 1], foreground_color=[.9, .9, .9, 1])
+        self.text_input = TextInput(text=text, background_color=[.17, .17, .17, 1], foreground_color=[.9, .9, .9, 1])
         layout.add_widget(self.text_input)
         layout.add_widget(Button(text='Посчитать', on_press=self.click_button, size_hint=[1, 0.12]))
         return layout
@@ -35,5 +49,20 @@ class MyApp(App):
         self.popup.dismiss()
 
 
+def autosave():
+    while autosave:
+        time.sleep(2)
+        data['data'] = {'text': app.text_input._get_text()}
+    sys.exit()
+
+
 if __name__ == '__main__':
-    MyApp().run()
+    app = MyApp()
+    saver = threading.Thread(target=autosave)
+    saver.start()
+    app.run()
+
+try:
+    pass
+finally:
+    autosave = False
