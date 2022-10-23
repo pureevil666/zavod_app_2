@@ -1,9 +1,9 @@
 from kivy.config import Config
 
-Config.set('kivy', 'keyboard_mode', 'system')
 Config.set('graphics', 'position', 'custom')
 Config.set('graphics', 'left', 0)
 Config.set('graphics', 'top', 0)
+
 
 import calculation
 import json
@@ -18,6 +18,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.storage.jsonstore import JsonStore
 
+
 autosave = True
 data = JsonStore('data_file.json')
 try:
@@ -29,15 +30,17 @@ except KeyError:
 
 class MyApp(App):
     def build(self):
+
         layout = GridLayout(rows=2)
-        self.text_input = TextInput(text=text, background_color=[.17, .17, .17, 1], foreground_color=[.9, .9, .9, 1])
+        self.text_input = TextInput(text=text, background_color=[.17, .17, .17, 1], foreground_color=[.9, .9, .9, 1],
+                                    text_language='ru')
         layout.add_widget(self.text_input)
-        layout.add_widget(Button(text='Посчитать', on_press=self.click_button, size_hint=[1, 0.12]))
+        layout.add_widget(Button(text='Посчитать', on_press=self.click_button, size_hint=[1, 0.5]))
         return layout
 
     def click_button(self, instance):
         calculation.give_data(self.text_input._get_text())
-        content = GridLayout(cols=1, rows=3, padding=[10])
+        content = GridLayout(cols=1, rows=2, padding=[10])
         self.popup = Popup(size_hint=(.7, .6), title='Результат', title_align='center',
                            title_size=20, content=content)
         self.popup.open()
