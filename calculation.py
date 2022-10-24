@@ -1,4 +1,4 @@
-LETTERS = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя- ()'
+LETTERS = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя- ().'
 LETTERS = LETTERS + LETTERS.upper()
 group_dict = {}
 overall_score = 0
@@ -16,7 +16,11 @@ def convert_data_to_list(data):
     for i in range(0, 5):
         while ' ' * i in data_list:
             data_list.remove(' ' * i)
-
+    while True:
+        if '.' in data_list:
+            data_list.remove('.')
+        else:
+            break
     create_groups(data_list)
 
 
@@ -62,6 +66,8 @@ def make_final_dict(group_dict):
 def count_result(item_list):
     buffer_count = 0
     for el in item_list:
+        if el[0] == '.':
+            continue
         buffer_list = el.split(' ')
         if len(buffer_list) == 1 or not buffer_list[1].isdigit():
             buffer_count += check_value(buffer_list)
@@ -92,16 +98,18 @@ def check_value(value):
     output_string = ''
     for i in value:
         new_string += i
-    print(new_string)
     # ---------------------------ЕСЛИ РАЗМЕР ЧИСЛОВОЙ
-    if new_string[0].isdigit() and new_string[1].isdigit():
-        new_string = new_string[2:]
-        print(new_string)
-        for char in new_string:
-            if char.isdigit():
-                output_string += char
-            else:
-                return int(output_string)
+    try:
+        if new_string[0].isdigit() and new_string[1].isdigit():
+            new_string = new_string[2:]
+            print(new_string)
+            for char in new_string:
+                if char.isdigit():
+                    output_string += char
+                else:
+                    return int(output_string)
+    except IndexError:
+        return 0
     # -----------------------------ЕСЛИ РАЗМЕР БУКВЕННЫЙ
     else:
         for i in range(0, len(new_string)):
