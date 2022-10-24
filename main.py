@@ -4,7 +4,6 @@ Config.set('graphics', 'position', 'custom')
 Config.set('graphics', 'left', 0)
 Config.set('graphics', 'top', 0)
 
-
 import calculation
 import json
 import threading
@@ -14,12 +13,10 @@ from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
+from kivy.uix.scrollview import ScrollView
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.storage.jsonstore import JsonStore
-
-# --- УВЕЛИЧИТЬ ШРИФТ ТЕКСТИНПУТА
-# --- ПРИ ФОКУСЕ ТЕКСТИНПУТ УВЕЛИЧИВАЕТСЯ
 
 autosave = True
 button_size = [0, .15]
@@ -30,6 +27,7 @@ try:
 except KeyError:
     data.put('data')
     text = ''
+
 
 class Input(TextInput):
     def __init__(self, **kwargs):
@@ -48,13 +46,11 @@ class Input(TextInput):
                 app.button.size_hint = [1, 0.15]
 
 
-
-
 class MyApp(App):
     def build(self):
         layout = GridLayout(rows=3, cols=1)
         self.text_input = Input(text=text, background_color=[.17, .17, .17, 1], foreground_color=[.9, .9, .9, 1],
-                                    text_language='ru', font_size=16)
+                                text_language='ru', font_size=28, padding=[10, 0, 10, 0])
         layout.add_widget(self.text_input)
         self.button = Button(text='Посчитать', on_press=self.click_button, size_hint=button_size)
         layout.add_widget(self.button)

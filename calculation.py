@@ -1,4 +1,4 @@
-LETTERS = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя- ().'
+LETTERS = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя- ().abcdefghijklmnopqrstuvwxyz'
 LETTERS = LETTERS + LETTERS.upper()
 group_dict = {}
 overall_score = 0
@@ -28,6 +28,8 @@ def create_groups(input_list):
     global group_dict
     group_list = []
     for line in input_list:
+        if line[0] == '.':
+            continue
         if len(line.strip(LETTERS)) == 0:
             group_dict[line] = 0
     for name in group_dict:
@@ -84,7 +86,6 @@ def count_overall_score(group_dict):
         overall_score += int(group_dict[group])
 
 
-
 def create_label(group_dict):
     global label
     if len(label) > 0:
@@ -121,4 +122,7 @@ def check_value(value):
                 return int(output_string)
             else:
                 continue
-        return int(output_string)
+        try:
+            return int(output_string)
+        except ValueError:
+            return 0
