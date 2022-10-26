@@ -5,7 +5,6 @@ Config.set('graphics', 'left', 0)
 Config.set('graphics', 'top', 0)
 
 import calculation
-import json
 import threading
 import time
 import datetime
@@ -41,7 +40,6 @@ month_dict = {'1': 'янв',
 try:
     text = data.get('data')[date]
 except KeyError:
-    data.put('data')
     text = ''
     data['data'] = {date: text}
 
@@ -72,7 +70,7 @@ class MyApp(App):
                                 text_language='ru', font_size=28, padding=[10, 0, 10, 0])
         main_layout.add_widget(self.text_input)
 
-        self.bottom_layout = GridLayout(rows=1, cols=2)
+        self.bottom_layout = GridLayout(rows=1, cols=3)
         self.button_count = Button(text='Посчитать', font_size=24, on_press=self.button_count_click)
         self.button_date = Button(text='История', font_size=24, on_press=self.button_date_click)
         self.bottom_layout.add_widget(self.button_count)
