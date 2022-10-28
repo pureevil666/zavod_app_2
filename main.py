@@ -156,6 +156,7 @@ class MyApp(App):
 
     def button_history_click(self, instance):
         self.clear_history()
+        self.sort_history()
         self.buttons_list = []
         self.carousel_list = []
         self.data_lenght = len(data)
@@ -205,7 +206,6 @@ class MyApp(App):
         self.data_names = []
         for el in data:
             self.data_names.append(el)
-        print(self.data_names)
         for el in self.data_names:
             if data[el]['text'] == '':
                 data.delete(el)
@@ -221,7 +221,19 @@ class MyApp(App):
         self.popup_history.dismiss()
 
     def sort_history(self):
-        print('sort')
+        new_array = []
+        out_array = []
+        new_dict = {}
+        for el in self.data_names:
+            arr = el.split('-')
+            new_dict[10000*int(arr[0]) + 100*int(arr[1]) + int(arr[2])] = el
+        for key, val in new_dict.items():
+            new_array.append(key)
+        new_array.sort(reverse=True)
+        for el in new_array:
+            out_array.append(new_dict[el])
+        self.data_names = out_array
+        print(self.data_names)
 
     def show_statistic(self, instance):
         self.popup_history.dismiss()
