@@ -37,13 +37,15 @@ month_dict = {'1': 'янв',
               '12': 'дек',
               }
 
-if not 'data' in data:
-    data.put('data')
-if date in data['data']:
-    text = data.get('data')[date]
+
+
+if not date in data:
+    data.put(date)
+if 'text' in data[date]:
+    text = data.get(date)['text']
 else:
     text = ''
-    data['data'][date] = text
+    data[date]['text'] = text
 
 
 class Input(TextInput):
@@ -99,6 +101,7 @@ class MyApp(App):
 
     def button_count_click(self, instance):
         calculation.give_data(self.text_input._get_text())
+        data[date]['result'] = calculation.overall_score
         content = GridLayout(cols=1, rows=3, padding=[10])
         self.popup_count = Popup(size_hint=(.7, .6), title='Результат', title_align='center',
                                  title_size=28, content=content)
@@ -155,7 +158,7 @@ class MyApp(App):
         self.clear_history()
         self.buttons_list = []
         self.carousel_list = []
-        self.data_lenght = len(data['data'])
+        self.data_lenght = len(data)
 
         content = GridLayout(cols=1, rows=2, spacing=10, padding=[10])
         self.popup_history = Popup(size_hint=(.8, .9), title='История', title_align='center',
@@ -194,25 +197,26 @@ class MyApp(App):
 
     def destroy_history(self, instance):
         self.popup_history.dismiss()
-        for el in data['data']:
+        for el in data:
             if el != datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d"):
-                data['data'][el] = ''
+                data[el]['text'] = ''
 
     def clear_history(self):
         self.data_names = []
-        for el in data['data']:
+        for el in data:
             self.data_names.append(el)
+        print(self.data_names)
         for el in self.data_names:
-            if data['data'][el] == '':
-                del data['data'][el]
+            if data[el]['text'] == '':
+                data.delete(el)
         self.data_names.clear()
-        for el in data['data']:
+        for el in data:
             self.data_names.append(el)
 
     def load_history(self, instance):
         global date
         date = self.to_number_date(instance.text)
-        self.text_input.text = data.get('data')[date]
+        self.text_input.text = data.get(date)['text']
         self.date_label.text = self.to_text_date(date)
         self.popup_history.dismiss()
 
@@ -270,10 +274,11 @@ class MyApp(App):
         self.year = self.data_picker_year._get_text()
         date = f'{self.year}-{self.month}-{self.day}'
         try:
-            self.text_input.text = data.get('data')[date]
+            self.text_input.text = data.get(date)['text']
         except KeyError:
-            data['data'][date] = ''
-            self.text_input.text = data.get('data')[date]
+            data.put(date)
+            data[date]['text'] = ''
+            self.text_input.text = data.get(date)['text']
         self.date_label.text = self.to_text_date(date)
         self.popup_date.dismiss()
 
@@ -287,10 +292,10 @@ class MyApp(App):
         self.data_picker_year._set_text(self.year)
         date = f'{self.year}-{self.month}-{self.day}'
         try:
-            self.text_input.text = data.get('data')[date]
+            self.text_input.text = data.get(date)['text']
         except KeyError:
-            data['data'][date] = ''
-            self.text_input.text = data.get('data')[date]
+            data[date]['text'] = ''
+            self.text_input.text = data.get(date)['text']
         self.date_label.text = self.to_text_date(date)
         self.popup_date.dismiss()
 
@@ -306,9 +311,11 @@ class MyApp(App):
 def autosave():
     while autosave:
         time.sleep(0.5)
-        buffer_dict = data['data']
-        buffer_dict[date] = app.text_input._get_text()
-        data['data'] = buffer_dict
+        if not date in data:
+            data.put(date)
+        buffer_dict = data[date]
+        buffer_dict['text'] = app.text_input._get_text()
+        data[date] = buffer_dict
     sys.exit()
 
 
