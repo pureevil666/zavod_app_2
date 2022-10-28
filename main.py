@@ -14,13 +14,10 @@ import math
 from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
-from kivy.uix.scrollview import ScrollView
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.storage.jsonstore import JsonStore
-from kivy.uix.scrollview import ScrollView
 from kivy.uix.carousel import Carousel
 
 autosave = True
@@ -65,6 +62,17 @@ class Input(TextInput):
                 app.bottom_layout.size_hint = [1, 0.15]
 
 
+class DateInput(TextInput):
+    def __init__(self, text):
+        super(DateInput, self).__init__()
+        self.text = text
+        self.multiline = False
+        self.font_size = 26
+        self.halign = 'center'
+        self.input_filter = 'int'
+        self.padding = [0, 10]
+
+
 class MyApp(App):
     def build(self):
         self.day = datetime.datetime.strftime(datetime.datetime.now(), "%d")
@@ -72,12 +80,9 @@ class MyApp(App):
         self.year = datetime.datetime.strftime(datetime.datetime.now(), "%Y")
 
         main_layout = GridLayout(rows=3, cols=1)
-        self.date_label = Label(text=self.to_text_date(date), font_size=20, size_hint=[1, .03],
-                                disabled_outline_color=[.17, .17, .17, 1])
-        main_layout.add_widget(self.date_label)
+        self.date_label = Label(text=self.to_text_date(date), font_size=20, size_hint=[1, .03])
         self.text_input = Input(text=text, background_color=[.17, .17, .17, 1], foreground_color=[.9, .9, .9, 1],
                                 text_language='ru', font_size=28, padding=[10, 0, 10, 0])
-        main_layout.add_widget(self.text_input)
 
         self.bottom_layout = GridLayout(rows=1, cols=3)
         self.button_count = Button(text='Посчитать', font_size=24, on_press=self.button_count_click)
@@ -87,6 +92,8 @@ class MyApp(App):
         self.bottom_layout.add_widget(self.button_date)
         self.bottom_layout.add_widget(self.button_history)
 
+        main_layout.add_widget(self.date_label)
+        main_layout.add_widget(self.text_input)
         main_layout.add_widget(self.bottom_layout)
         return main_layout
 
@@ -105,30 +112,27 @@ class MyApp(App):
 
         content_datapicker = GridLayout(cols=3, rows=1, padding=[20, 0, 20, 10], spacing=10)
 
-        self.data_picker_day = TextInput(text=self.day, multiline=False, font_size=26, halign='center',
-                                         input_filter='int', padding=[0, 10])
-        self.data_picker_month = TextInput(text=self.month, multiline=False, font_size=26, halign='center',
-                                           input_filter='int', padding=[0, 10])
-        self.data_picker_year = TextInput(text=self.year, multiline=False, font_size=26, halign='center',
-                                          input_filter='int', padding=[0, 10])
+        self.data_picker_day = DateInput(self.day)
+        self.data_picker_month = DateInput(self.month)
+        self.data_picker_year = DateInput(self.year)
 
         day_picker_layout = GridLayout(cols=1, rows=4, padding=[10, 0])
         day_picker_layout.add_widget(Label(text='День', font_size=24))
-        day_picker_layout.add_widget(Button(text='+', font_size=24, on_press=self.plus_day))
+        day_picker_layout.add_widget(Button(text='+', font_size=24, on_press=self.change_day))
         day_picker_layout.add_widget(self.data_picker_day)
-        day_picker_layout.add_widget(Button(text='-', font_size=24, on_press=self.minus_day))
+        day_picker_layout.add_widget(Button(text='-', font_size=24, on_press=self.change_day))
 
         month_picker_layout = GridLayout(cols=1, rows=4, padding=[10, 0])
         month_picker_layout.add_widget(Label(text='Месяц', font_size=24))
-        month_picker_layout.add_widget(Button(text='+', font_size=24, on_press=self.plus_month))
+        month_picker_layout.add_widget(Button(text='+', font_size=24, on_press=self.change_month))
         month_picker_layout.add_widget(self.data_picker_month)
-        month_picker_layout.add_widget(Button(text='-', font_size=24, on_press=self.minus_month))
+        month_picker_layout.add_widget(Button(text='-', font_size=24, on_press=self.change_month))
 
         year_picker_layout = GridLayout(cols=1, rows=4, padding=[10, 0])
         year_picker_layout.add_widget(Label(text='Год', font_size=24))
-        year_picker_layout.add_widget(Button(text='+', font_size=24, on_press=self.plus_year))
+        year_picker_layout.add_widget(Button(text='+', font_size=24, on_press=self.change_year))
         year_picker_layout.add_widget(self.data_picker_year)
-        year_picker_layout.add_widget(Button(text='-', font_size=24, on_press=self.minus_year))
+        year_picker_layout.add_widget(Button(text='-', font_size=24, on_press=self.change_year))
 
         content_datapicker.add_widget(day_picker_layout)
         content_datapicker.add_widget(month_picker_layout)
@@ -157,19 +161,18 @@ class MyApp(App):
         self.popup_history = Popup(size_hint=(.8, .9), title='История', title_align='center',
                                    title_size=28, content=content)
 
-        buttons = GridLayout(cols=2, rows=1, spacing=5, size_hint=[1, .1])
+        buttons = GridLayout(cols=3, rows=1, spacing=5, size_hint=[1, .1])
         buttons.add_widget(Button(text='Очистить', font_size=26, size_hint=[1, .1], on_release=self.destroy_history))
-        buttons.add_widget(
-            Button(text='Закрыть', font_size=26, on_release=self.popup_history.dismiss))
+        buttons.add_widget(Button(text='Статистика', font_size=26, size_hint=[1, .1], on_release=self.show_statistic))
+        buttons.add_widget(Button(text='Закрыть', font_size=26, on_release=self.popup_history.dismiss))
 
         carousel = Carousel(direction='bottom')
         content.add_widget(carousel)
         content.add_widget(buttons)
 
         for el in self.data_names:
-            el = el.split('-')
-            name = f'{el[2]} {month_dict[el[1]]} {el[0]}'
-            self.buttons_list.append(Button(text=str(name), font_size=24, on_release=self.load_history))
+            el = self.to_text_date(el)
+            self.buttons_list.append(Button(text=str(el), font_size=24, on_release=self.load_history))
 
         for i in range(math.ceil(self.data_lenght / 20)):
             self.carousel_list.append(GridLayout(cols=1, rows=20, spacing=[2]))
@@ -213,51 +216,50 @@ class MyApp(App):
         self.date_label.text = self.to_text_date(date)
         self.popup_history.dismiss()
 
-    def plus_day(self, instance):
+    def sort_history(self):
+        print('sort')
+
+    def show_statistic(self, instance):
+        self.popup_history.dismiss()
+
+        content = GridLayout(cols=1, rows=3, padding=[10])
+
+
+        self.popup_statistics = Popup(size_hint=(.8, .9), title='Статистика', title_align='center',
+                                   title_size=28, content=content)
+
+        self.popup_statistics.open()
+
+
+
+        print('statistic')
+
+    def change_day(self, instance):
         result = self.data_picker_day._get_text()
-        result = int(result) + 1
-        if result <= 31:
-            self.day = str(result)
-        else:
+        result = int(eval(f'{result}{instance.text}1'))
+        if result > 31:
             self.day = '1'
-        self.data_picker_day._set_text(self.day)
-
-    def minus_day(self, instance):
-        result = self.data_picker_day._get_text()
-        result = int(result) - 1
-        if result > 0:
-            self.day = str(result)
-        else:
+        elif result == 0:
             self.day = '31'
+        else:
+            self.day = str(result)
+
         self.data_picker_day._set_text(self.day)
 
-    def plus_month(self, instance):
+    def change_month(self, instance):
         result = self.data_picker_month._get_text()
-        result = int(result) + 1
-        if result <= 12:
-            self.month = str(result)
-        else:
+        result = int(eval(f'{result}{instance.text}1'))
+        if result > 12:
             self.month = '1'
-        self.data_picker_month._set_text(self.month)
-
-    def minus_month(self, instance):
-        result = self.data_picker_month._get_text()
-        result = int(result) - 1
-        if result > 0:
-            self.month = str(result)
-        else:
+        elif result < 1:
             self.month = '12'
+        else:
+            self.month = str(result)
         self.data_picker_month._set_text(self.month)
 
-    def plus_year(self, instance):
+    def change_year(self, instance):
         result = self.data_picker_year._get_text()
-        result = int(result) + 1
-        self.year = str(result)
-        self.data_picker_year._set_text(self.year)
-
-    def minus_year(self, instance):
-        result = self.data_picker_year._get_text()
-        result = int(result) - 1
+        result = int(eval(f'{result}{instance.text}1'))
         self.year = str(result)
         self.data_picker_year._set_text(self.year)
 
@@ -307,7 +309,6 @@ def autosave():
         buffer_dict = data['data']
         buffer_dict[date] = app.text_input._get_text()
         data['data'] = buffer_dict
-
     sys.exit()
 
 
