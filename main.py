@@ -36,8 +36,20 @@ month_dict = {'1': 'янв',
               '11': 'ноя',
               '12': 'дек',
               }
-
-
+month_dict_fullname = {
+    '1': 'Январь',
+    '2': 'Февраль',
+    '3': 'Март',
+    '4': 'Апрель',
+    '5': 'Май',
+    '6': 'Июнь',
+    '7': 'Июль',
+    '8': 'Август',
+    '9': 'Сентябрь',
+    '10': 'Октябрь',
+    '11': 'Ноябрь',
+    '12': 'Декабрь',
+}
 
 if not date in data:
     data.put(date)
@@ -175,8 +187,12 @@ class MyApp(App):
         content.add_widget(buttons)
 
         for el in self.data_names:
+            result = ''
+            if 'result' in data[el]:
+                if data[el]['result'] > 0:
+                    result += f'    ({data[el]["result"]})'
             el = self.to_text_date(el)
-            self.buttons_list.append(Button(text=str(el), font_size=24, on_release=self.load_history))
+            self.buttons_list.append(Button(text=f"{el}{result}", font_size=24, on_release=self.load_history))
 
         for i in range(math.ceil(self.data_lenght / 20)):
             self.carousel_list.append(GridLayout(cols=1, rows=20, spacing=[2]))
@@ -233,22 +249,87 @@ class MyApp(App):
         for el in new_array:
             out_array.append(new_dict[el])
         self.data_names = out_array
-        print(self.data_names)
 
     def show_statistic(self, instance):
         self.popup_history.dismiss()
-
-        content = GridLayout(cols=1, rows=3, padding=[10])
-
-
+        self.get_month_list()
+        stat_content = GridLayout(cols=1, rows=2, padding=[10])
         self.popup_statistics = Popup(size_hint=(.8, .9), title='Статистика', title_align='center',
-                                   title_size=28, content=content)
+                                      title_size=28, content=stat_content)
+
+        stat_carousel = Carousel(direction='bottom')
+        stat_content.add_widget(stat_carousel)
+        stat_buttons = GridLayout(cols=2, rows=1, padding=[5], size_hint=[1, 0.1])
+        stat_buttons.add_widget(Button(text='Закрыть', font_size=26, on_release=self.popup_statistics.dismiss))
+        stat_content.add_widget(stat_buttons)
+
+        buttons_list = []
+        carousel_list = []
+        for el in self.month_list:
+            buttons_list.append(Button(text=str(el), font_size=24, on_release=self.show_month_statistics))
+
+        for i in range(math.ceil(len(self.month_list) / 10)):
+            carousel_list.append(GridLayout(cols=1, rows=10, spacing=[2]))
+
+        for car in carousel_list:
+            count = 0
+            while count < 10:
+                try:
+                    car.add_widget(buttons_list[count])
+                except IndexError:
+                    break
+                count += 1
+            buttons_list = buttons_list[count:]
+
+        for el in carousel_list:
+            stat_carousel.add_widget(el)
 
         self.popup_statistics.open()
 
+    def show_month_statistics(self, instance):
+        self.popup_statistics.dismiss()
 
+        content = GridLayout(rows=2, cols=1)
+        self.popup_statistics_month = Popup(size_hint=(.5, .6), title='Статистика', title_align='center',
+                                      title_size=28, content=content)
+        result_text = self.count_statistics(instance.text)
+        content_text_layout = GridLayout(rows=2, cols=1)
+        content_result_text = Label(text=result_text, font_size=24)
+        content_label_text = Label(text=f'Результат за\n{instance.text}', font_size=28)
+        content_text_layout.add_widget(content_label_text)
+        content_text_layout.add_widget(content_result_text)
+        content_buttons = GridLayout(rows=1, cols=2, size_hint=[1, .1], padding=[5])
+        content_buttons.add_widget(Button(text='Назад', font_size=26, on_release=self.back_button))
+        content_buttons.add_widget(Button(text='Закрыть', font_size=26, on_release=self.popup_statistics_month.dismiss))
+        content.add_widget(content_text_layout)
+        content.add_widget(content_buttons)
 
-        print('statistic')
+        self.popup_statistics_month.open()
+
+    def back_button(self, instance):
+        self.popup_statistics_month.dismiss()
+        self.popup_statistics.open()
+
+    def get_month_list(self):
+        self.month_list = []
+        for el in self.data_names:
+            buf = el.split('-')
+            if not f'{month_dict_fullname[buf[1]]} {buf[0]}' in self.month_list:
+                self.month_list.append(f'{month_dict_fullname[buf[1]]} {buf[0]}')
+        print(self.month_list)
+
+    def count_statistics(self, value):
+        month = get_key(month_dict_fullname, value.split(' ')[0])
+        year = value.split(' ')[1]
+        result = 0
+        money = 0
+        yearmonth = f'{year}-{month}'
+        for el in data:
+            if yearmonth in el:
+                if 'result' in data[el]:
+                    result += data[el]['result']
+
+        return str(f'Количество: {result} шт.\nЗаработано: {money}')
 
     def change_day(self, instance):
         result = self.data_picker_day._get_text()
@@ -306,6 +387,7 @@ class MyApp(App):
         try:
             self.text_input.text = data.get(date)['text']
         except KeyError:
+            data.put(date)
             data[date]['text'] = ''
             self.text_input.text = data.get(date)['text']
         self.date_label.text = self.to_text_date(date)
